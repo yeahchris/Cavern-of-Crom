@@ -1,4 +1,3 @@
-
 function execute_movement(_moveX,_moveY,_collidables = collidables,_downslopes = true,_upslopes = true,_x_col_stop = true,_y_col_stop = true,_check_vert_points = true) {
 	//check_top_points();
     var _subpixel = .5;
@@ -33,8 +32,9 @@ function execute_movement(_moveX,_moveY,_collidables = collidables,_downslopes =
 	
 	
 
-		
-	check_top_points();
+	if (_check_vert_points){
+		check_top_points();
+	}
 	
     //Check for vertical collisions, vertical move commit.
     if (!place_meeting(x, y + _moveY, collidables)) {
@@ -72,4 +72,3 @@ function execute_movement(_moveX,_moveY,_collidables = collidables,_downslopes =
 	}
     return _collided;
 }
-
