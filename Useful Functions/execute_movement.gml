@@ -1,54 +1,75 @@
-function executeMovement() {
-    var _subpixel = .5;
-    var _collided = false;
 
+function execute_movement(_moveX,_moveY,_collidables = collidables,_downslopes = true,_upslopes = true,_x_col_stop = true,_y_col_stop = true,_check_vert_points = true) {
+	//check_top_points();
+    var _subpixel = .5;
+	var _collided = {}
+    _collided.X = false;
+	_collided.Y = false;
 
     //Horizontal stuff.
-    if (!place_meeting(x + move_x, y, collidables_array)) {
+    if (!place_meeting(x + _moveX, y, collidables)) {
         //Check for downward slopes & go down them
-        if (move_y >= 0 && !place_meeting(x + move_x, y + 1, collidables_array) && place_meeting(x + move_x, y + abs(move_x), collidables_array)) {
-            while (!place_meeting(x + move_x, y + _subpixel, collidables_array)) {
+        if (_downslopes == true && _moveY >= 0 && !place_meeting(x + _moveX, y + 1, collidables) && place_meeting(x + _moveX, y + max(abs(_moveX),1)+1, collidables)) {
+            while (!place_meeting(x + _moveX, y + _subpixel, collidables)) {
                 y += _subpixel;
             }
         }
-        x += move_x;
+        x += _moveX;
 
     //Check for upward slopes & go up them.
-    } else if (!place_meeting(x + move_x, y - round(max(abs(move_x),1)), collidables_array)) {
-        while (place_meeting(x + move_x, y, collidables_array)) {
+    } else if (_upslopes == true && !place_meeting(x + _moveX, y - round(max(abs(_moveX),1)+1), collidables)) {
+        while (place_meeting(x + _moveX, y, collidables)) {
             y -= _subpixel;
         }
-        x += move_x;
+        x += _moveX;
     } else {
     //Otherwise, get as close as you can.
-        while (!place_meeting(x + sign(move_x) * _subpixel, y, collidables_array)) {
-            x += sign(move_x) * _subpixel;
+        while (!place_meeting(x + sign(_moveX) * _subpixel, y, collidables)) {
+            x += sign(_moveX) * _subpixel;
         }
-        _collided = true;
-    }
-
-
-    //Check for vertical collisions, vertical move commit.
-    if (!place_meeting(x, y + move_y, collidables_array)) {
-        y += move_y;
-    } else {
-        while (!place_meeting(x, y + sign(move_y) * _subpixel, collidables_array)) {
-            y += sign(move_y) * _subpixel;
-        }
-        _collided = true;
+		if (_x_col_stop == true) moveX = 0;
+        _collided.X = true;
     }
 	
-	var _movingPlatform = instance_place(x,y + max(1,move_y),obj_platform_parent);
-	if (_movingPlatform != noone){
-		var _is_collidable = false;
-		for (var i = 0; i < array_length(collidables_array);i++){
-			if (collidables_array[i] == _movingPlatform) _is_collidable = true;	
+	
+
+		
+	check_top_points();
+	
+    //Check for vertical collisions, vertical move commit.
+    if (!place_meeting(x, y + _moveY, collidables)) {
+        y += _moveY;
+    } else if (_check_vert_points == true && topLeftBlocked == true && topMiddleLeftBlocked == false && sign(hInput) >= 0) {
+		while (place_meeting(x,y + _moveY,collidables) == true && place_meeting(x+_subpixel,y,collidables)== false){
+			x+=_subpixel;
 		}
-		if (_is_collidable && onground){
-			x += _movingPlatform.move_x;
-			y += _movingPlatform.move_y;
+	
+	} else if (_check_vert_points == true && topRightBlocked == true && topMiddleRightBlocked == false && sign(hInput) <= 0){
+		while (place_meeting(x,y + _moveY,collidables) == true && place_meeting(x-_subpixel,y,collidables)== false){
+			x-=_subpixel;
+		}			
+		
+	} else {	
+        while (!place_meeting(x, y + sign(_moveY) * _subpixel, collidables)) {
+            y += sign(_moveY) * _subpixel;
+        }
+		if (object_index == obj_player) jumpHoldTimer = 0;
+		if (sign(moveY) > 0) onground = true;
+		if (_y_col_stop == true) moveY = 0;
+        _collided.Y = true;
+    }
+	
+	var _movingPlatform = instance_place(x,y + max(1,_moveY),obj_platform_parent);
+	if (_movingPlatform != noone &&	array_contains(collidables,_movingPlatform)){
+		myplatform = _movingPlatform		
+	} else {
+		_movingPlatform = instance_place(x,y + max(1,_moveY),obj_pushable_parent);
+		if (_movingPlatform != noone) {
+			myplatform = _movingPlatform;
+		} else {
+			myplatform = noone;	
 		}
 	}
-	
     return _collided;
 }
+
