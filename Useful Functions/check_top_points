@@ -1,0 +1,6 @@
+function check_top_points(_collidables = collidables, _y_col_fudge = global.y_col_fudge){
+	topLeftBlocked =		position_meeting(bbox_left+.5,bbox_top+moveY,collidables);
+	topMiddleLeftBlocked =  position_meeting(bbox_left+_y_col_fudge,bbox_top+moveY,collidables);
+	topRightBlocked =		position_meeting(bbox_right-.5,bbox_top+moveY,collidables);
+	topMiddleRightBlocked =	position_meeting(bbox_right-_y_col_fudge,bbox_top+moveY,collidables);
+}
